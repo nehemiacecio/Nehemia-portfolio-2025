@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import type { MonthEntry } from '../types';
+import type { MonthEntry, TaskItem } from '../types';
 
 interface MonthCardProps {
   entry: MonthEntry;
@@ -7,15 +7,27 @@ interface MonthCardProps {
 }
 
 export function MonthCard({ entry, isActive }: MonthCardProps) {
-  // Different color for each task with good contrast
-  const getTaskColor = (index: number) => {
-    const colors = [
-      { bg: 'bg-primary', text: 'text-white' },
-      { bg: 'bg-secondary', text: 'text-black' },
-      { bg: 'bg-accent', text: 'text-black' },
-      { bg: 'bg-base border-4 border-secondary', text: 'text-text' },
-    ];
-    return colors[index % colors.length];
+  const getTaskTitle = (task: string | TaskItem): string => {
+    return typeof task === 'string' ? task : task.title;
+  };
+
+  // Get main project for this month
+  const getMainProject = (): string => {
+    const firstTask = getTaskTitle(entry.highlights[0]).toLowerCase();
+    if (firstTask.includes('mti') || firstTask.includes('linux')) return 'MTI Linux';
+    if (firstTask.includes('bckg')) return 'BCKG';
+    if (firstTask.includes('bcvn')) return 'BCVN';
+    if (firstTask.includes('personal')) return 'Personal';
+    return 'Project';
+  };
+
+  // Clean task name
+  const cleanTask = (task: string): string => {
+    return task
+      .replace(/^BCKG:\s*/i, '')
+      .replace(/^BCVN:\s*/i, '')
+      .replace(/^Personal Project:\s*/i, '')
+      .replace(/\s*\[.*?\]\s*/g, ''); // Remove ticket numbers like [432]
   };
 
   return (
@@ -26,39 +38,48 @@ export function MonthCard({ entry, isActive }: MonthCardProps) {
         transition={{ duration: 0.4 }}
         className="max-w-2xl w-full"
       >
-        {/* Month Title */}
+        {/* Month Header */}
         <motion.div
           initial={{ y: -20 }}
           animate={{ y: 0 }}
-          className="pixel-border bg-primary p-6 sm:p-8 mb-6"
+          className="pixel-border bg-primary p-6 sm:p-8 mb-4"
         >
-          <div className="font-pixel text-accent text-sm sm:text-base mb-3">
-            {entry.monthName.toUpperCase()}
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-pixel text-accent text-lg sm:text-xl">
+              {entry.monthName.toUpperCase()}
+            </span>
+            <span className="font-pixel text-white/70 text-sm">
+              {getMainProject()}
+            </span>
           </div>
-          <h2 className="font-retro text-4xl sm:text-5xl md:text-6xl text-white leading-tight">
+          <h2 className="font-retro text-3xl sm:text-4xl md:text-5xl text-white">
             {entry.title}
           </h2>
         </motion.div>
 
-        {/* Task List - Each with different color */}
-        <div className="space-y-3">
-          {entry.highlights.map((task, index) => {
-            const colorStyle = getTaskColor(index);
-            return (
-              <motion.div
-                key={index}
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.2 + index * 0.1 }}
-                className={`pixel-border ${colorStyle.bg} p-4 sm:p-5`}
-              >
-                <span className={`font-retro text-2xl sm:text-3xl ${colorStyle.text} leading-relaxed`}>
-                  {task}
+        {/* Key Tasks - Simple List */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="pixel-border bg-secondary p-5 sm:p-6"
+        >
+          <div className="space-y-3">
+            {entry.highlights.slice(0, 4).map((task, index) => (
+              <div key={index} className="flex items-start gap-3">
+                <span className="font-pixel text-primary text-lg">▸</span>
+                <span className="font-retro text-xl sm:text-2xl text-black">
+                  {cleanTask(getTaskTitle(task))}
                 </span>
-              </motion.div>
-            );
-          })}
-        </div>
+              </div>
+            ))}
+            {entry.highlights.length > 4 && (
+              <div className="font-pixel text-sm text-black/60 pt-2">
+                +{entry.highlights.length - 4} more tasks
+              </div>
+            )}
+          </div>
+        </motion.div>
       </motion.div>
     </div>
   );
