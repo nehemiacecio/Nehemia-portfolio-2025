@@ -13,17 +13,12 @@ export interface Advice {
   recommendation?: string;
 }
 
-export interface TaskItem {
-  title: string;
-  detail?: string;
-}
-
 export interface MonthEntry {
   month: number; // 1-12
   monthName: string;
   title: string;
   description: string;
-  highlights: (string | TaskItem)[];
+  highlights: string[];
   tags: MonthTag[];
   media?: MediaItem[];
   advice?: Advice;
