@@ -8,24 +8,21 @@ interface ThemeToggleProps {
 export function ThemeToggle({ isDark, onToggle }: ThemeToggleProps) {
   return (
     <motion.button
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.9 }}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
       onClick={onToggle}
-      className="pixel-border bg-base px-3 py-2 flex items-center gap-2"
+      className="theme-toggle flex items-center justify-center w-10 h-10"
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       <motion.span
-        key={isDark ? 'sun' : 'moon'}
-        initial={{ rotate: -180, opacity: 0 }}
+        key={isDark ? 'moon' : 'sun'}
+        initial={{ rotate: -90, opacity: 0 }}
         animate={{ rotate: 0, opacity: 1 }}
-        exit={{ rotate: 180, opacity: 0 }}
-        className="font-pixel text-sm"
+        exit={{ rotate: 90, opacity: 0 }}
+        className="text-lg"
       >
         {isDark ? '☀️' : '🌙'}
       </motion.span>
-      <span className="font-pixel text-xs text-text hidden sm:inline">
-        {isDark ? 'LIGHT' : 'DARK'}
-      </span>
     </motion.button>
   );
 }

@@ -6,59 +6,123 @@ interface MonthCardProps {
   isActive: boolean;
 }
 
+const badgeColors = [
+  'badge-red',
+  'badge-green',
+  'badge-blue',
+  'badge-purple',
+  'badge-pink'
+];
+
 export function MonthCard({ entry, isActive }: MonthCardProps) {
-  // Different color for each task with good contrast
-  const getTaskColor = (index: number) => {
-    const colors = [
-      { bg: 'bg-primary', text: 'text-white' },
-      { bg: 'bg-secondary', text: 'text-black' },
-      { bg: 'bg-accent', text: 'text-black' },
-      { bg: 'bg-base border-4 border-secondary', text: 'text-text' },
-    ];
-    return colors[index % colors.length];
-  };
+  const badgeColor = badgeColors[(entry.month - 1) % badgeColors.length];
 
   return (
-    <div className="min-h-full flex items-start justify-center p-4 sm:p-8 pb-28">
+    <div className="min-h-full flex items-center justify-center p-6 sm:p-12 pb-24">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: isActive ? 1 : 0.5, y: isActive ? 0 : 10 }}
-        transition={{ duration: 0.4 }}
-        className="max-w-2xl w-full"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: isActive ? 1 : 0.5, y: isActive ? 0 : 20 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-3xl w-full"
       >
-        {/* Month Title */}
-        <motion.div
-          initial={{ y: -20 }}
-          animate={{ y: 0 }}
-          className="pixel-border bg-primary p-6 sm:p-8 mb-6"
-        >
-          <div className="font-pixel text-accent text-sm sm:text-base mb-3">
+        {/* Header */}
+        <div className="mb-8">
+          <motion.span
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            className={`badge ${badgeColor} mb-4`}
+          >
             {entry.monthName.toUpperCase()}
-          </div>
-          <h2 className="font-retro text-4xl sm:text-5xl md:text-6xl text-white leading-tight">
+          </motion.span>
+
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="section-title text-text text-3xl sm:text-4xl md:text-5xl"
+          >
             {entry.title}
-          </h2>
+          </motion.h2>
+
+          {entry.description && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="text-text-muted text-lg mt-3"
+            >
+              {entry.description}
+            </motion.p>
+          )}
+        </div>
+
+        {/* Highlights */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="space-y-4"
+        >
+          {entry.highlights.map((task, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 + index * 0.1 }}
+              className="highlight-item"
+            >
+              <span className="highlight-number">{index + 1}</span>
+              <div>
+                <p className="text-lg sm:text-xl font-medium text-text">{task}</p>
+              </div>
+            </motion.div>
+          ))}
         </motion.div>
 
-        {/* Task List - Each with different color */}
-        <div className="space-y-3">
-          {entry.highlights.map((task, index) => {
-            const colorStyle = getTaskColor(index);
-            return (
-              <motion.div
-                key={index}
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.2 + index * 0.1 }}
-                className={`pixel-border ${colorStyle.bg} p-4 sm:p-5`}
-              >
-                <span className={`font-retro text-2xl sm:text-3xl ${colorStyle.text} leading-relaxed`}>
-                  {task}
+        {/* Outcomes */}
+        {entry.outcomes && entry.outcomes.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="mt-8 pt-6 border-t border-border"
+          >
+            <h4 className="text-sm font-semibold text-text-muted uppercase tracking-wide mb-3">
+              Outcomes
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {entry.outcomes.map((outcome, index) => (
+                <span
+                  key={index}
+                  className="px-3 py-1 bg-secondary rounded-full text-sm text-text"
+                >
+                  {outcome}
                 </span>
-              </motion.div>
-            );
-          })}
-        </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Advice */}
+        {entry.advice && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9 }}
+            className="mt-6 p-5 bg-secondary/50 rounded-xl"
+          >
+            <h4 className="text-sm font-semibold text-accent uppercase tracking-wide mb-2">
+              💡 Lesson Learned
+            </h4>
+            <p className="text-text">{entry.advice.lesson}</p>
+            {entry.advice.recommendation && (
+              <p className="text-text-muted text-sm mt-2">
+                → {entry.advice.recommendation}
+              </p>
+            )}
+          </motion.div>
+        )}
       </motion.div>
     </div>
   );

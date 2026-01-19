@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Keyboard, EffectCreative } from 'swiper/modules';
+import { Navigation, Keyboard, EffectCreative, Mousewheel } from 'swiper/modules';
 import type { Swiper as SwiperType } from 'swiper';
 import { motion } from 'framer-motion';
 import type { MonthEntry } from '../types';
@@ -35,107 +35,38 @@ export function TimelineSlider({ months, currentMonth, onMonthChange, onGoToSumm
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'End') {
         onGoToSummary();
+      } else if (e.key === 'Home') {
+        onGoHome();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onGoToSummary]);
-
-  const monthAbbreviations = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  }, [onGoToSummary, onGoHome]);
 
   return (
-    <div className="min-h-screen bg-base pt-16 sm:pt-20 relative">
-      {/* Stage Selector Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-primary border-t-4 border-border px-2 sm:px-4 py-2 sm:py-3">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between gap-1 sm:gap-2">
-            {/* Home Button */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={onGoHome}
-              className="font-pixel text-[10px] sm:text-xs px-2 sm:px-4 py-2 bg-secondary text-black border-2 border-border hover:bg-opacity-90"
-            >
-              HOME
-            </motion.button>
+    <div className="min-h-screen bg-base pt-16 relative">
+      {/* Dot Indicators - Right side */}
+      <div className="indicators hidden md:flex">
+        {months.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => onMonthChange(index + 1)}
+            className={`indicator ${currentMonth === index + 1 ? 'active' : ''}`}
+            aria-label={`Go to month ${index + 1}`}
+          />
+        ))}
+      </div>
 
-            {/* Desktop: Month buttons */}
-            <div className="hidden lg:flex items-center gap-1 overflow-x-auto flex-1 justify-center">
-              {monthAbbreviations.map((abbr, index) => (
-                <motion.button
-                  key={abbr}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => onMonthChange(index + 1)}
-                  className={`font-pixel text-[10px] sm:text-xs px-2 sm:px-3 py-2 border-2 border-border transition-all ${
-                    currentMonth === index + 1
-                      ? 'bg-accent text-black'
-                      : 'bg-base text-text hover:bg-secondary hover:text-black'
-                  }`}
-                >
-                  {abbr}
-                </motion.button>
-              ))}
-            </div>
-
-            {/* Tablet: Compact month selector */}
-            <div className="hidden sm:flex lg:hidden items-center gap-1 flex-1 justify-center overflow-x-auto px-2">
-              {monthAbbreviations.map((abbr, index) => (
-                <motion.button
-                  key={abbr}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => onMonthChange(index + 1)}
-                  className={`font-pixel text-[8px] px-1.5 py-1.5 border border-border transition-all ${
-                    currentMonth === index + 1
-                      ? 'bg-accent text-black'
-                      : 'bg-base text-text'
-                  }`}
-                >
-                  {index + 1}
-                </motion.button>
-              ))}
-            </div>
-
-            {/* Mobile: Stage counter with prev/next */}
-            <div className="flex sm:hidden items-center gap-2 flex-1 justify-center">
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => onMonthChange(Math.max(1, currentMonth - 1))}
-                className="font-pixel text-white text-lg px-2"
-                disabled={currentMonth === 1}
-              >
-                ◀
-              </motion.button>
-              <span className="font-pixel text-[10px] text-white min-w-[60px] text-center">
-                {currentMonth} / 12
-              </span>
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => onMonthChange(Math.min(12, currentMonth + 1))}
-                className="font-pixel text-white text-lg px-2"
-                disabled={currentMonth === 12}
-              >
-                ▶
-              </motion.button>
-            </div>
-
-            {/* Summary Button */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={onGoToSummary}
-              className="font-pixel text-[10px] sm:text-xs px-2 sm:px-4 py-2 bg-accent text-black border-2 border-border hover:bg-opacity-90"
-            >
-              <span className="hidden sm:inline">SUMMARY →</span>
-              <span className="sm:hidden">END</span>
-            </motion.button>
-          </div>
-        </div>
+      {/* Slide Counter */}
+      <div className="counter hidden sm:block">
+        <span className="current">{String(currentMonth).padStart(2, '0')}</span>
+        <span className="separator">/</span>
+        <span className="total">{String(months.length).padStart(2, '0')}</span>
       </div>
 
       {/* Swiper Slider */}
       <Swiper
-        modules={[Navigation, Keyboard, EffectCreative]}
+        modules={[Navigation, Keyboard, EffectCreative, Mousewheel]}
         spaceBetween={0}
         slidesPerView={1}
         navigation={{
@@ -143,11 +74,16 @@ export function TimelineSlider({ months, currentMonth, onMonthChange, onGoToSumm
           prevEl: '.swiper-button-prev-custom',
         }}
         keyboard={{ enabled: true }}
+        mousewheel={{
+          forceToAxis: true,
+          sensitivity: 1,
+          thresholdDelta: 50,
+        }}
         effect="creative"
         creativeEffect={{
           prev: {
             shadow: false,
-            translate: ['-100%', 0, 0],
+            translate: ['-20%', 0, -1],
             opacity: 0,
           },
           next: {
@@ -158,7 +94,7 @@ export function TimelineSlider({ months, currentMonth, onMonthChange, onGoToSumm
         onSwiper={(swiper) => { swiperRef.current = swiper; }}
         onSlideChange={handleSlideChange}
         initialSlide={currentMonth - 1}
-        className="h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)]"
+        className="h-[calc(100vh-64px)]"
       >
         {months.map((month, index) => (
           <SwiperSlide key={month.month} className="h-full overflow-y-auto bg-base">
@@ -167,13 +103,88 @@ export function TimelineSlider({ months, currentMonth, onMonthChange, onGoToSumm
         ))}
       </Swiper>
 
-      {/* Custom Navigation Arrows - Desktop only */}
-      <button className="swiper-button-prev-custom fixed left-2 sm:left-4 top-1/2 -translate-y-1/2 z-30 pixel-border bg-secondary p-2 sm:p-3 hover:bg-accent transition-colors hidden md:block">
-        <span className="font-pixel text-black text-lg sm:text-xl">◀</span>
+      {/* Navigation Arrows */}
+      <button
+        className="swiper-button-prev-custom nav-arrow nav-prev hidden md:flex"
+        aria-label="Previous month"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <polyline points="15,18 9,12 15,6"></polyline>
+        </svg>
       </button>
-      <button className="swiper-button-next-custom fixed right-2 sm:right-4 top-1/2 -translate-y-1/2 z-30 pixel-border bg-secondary p-2 sm:p-3 hover:bg-accent transition-colors hidden md:block">
-        <span className="font-pixel text-black text-lg sm:text-xl">▶</span>
+      <button
+        className="swiper-button-next-custom nav-arrow nav-next hidden md:flex"
+        aria-label="Next month"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <polyline points="9,6 15,12 9,18"></polyline>
+        </svg>
       </button>
+
+      {/* Bottom Navigation - Mobile */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-base/80 backdrop-blur-md border-t border-border px-4 py-3 md:hidden">
+        <div className="flex items-center justify-between max-w-lg mx-auto">
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={onGoHome}
+            className="btn btn-secondary text-sm px-4 py-2"
+          >
+            Home
+          </motion.button>
+
+          <div className="flex items-center gap-3">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => onMonthChange(Math.max(1, currentMonth - 1))}
+              className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center"
+              disabled={currentMonth === 1}
+            >
+              ←
+            </motion.button>
+            <span className="text-sm font-medium text-text min-w-[50px] text-center">
+              {currentMonth} / 12
+            </span>
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => onMonthChange(Math.min(12, currentMonth + 1))}
+              className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center"
+              disabled={currentMonth === 12}
+            >
+              →
+            </motion.button>
+          </div>
+
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={onGoToSummary}
+            className="btn btn-primary text-sm px-4 py-2"
+          >
+            Summary
+          </motion.button>
+        </div>
+      </div>
+
+      {/* Desktop Bottom Buttons */}
+      <div className="fixed bottom-6 left-6 z-40 hidden md:block">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onGoHome}
+          className="btn btn-secondary text-sm"
+        >
+          ← Home
+        </motion.button>
+      </div>
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 hidden md:block">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onGoToSummary}
+          className="btn btn-primary text-sm"
+        >
+          View Summary →
+        </motion.button>
+      </div>
     </div>
   );
 }
