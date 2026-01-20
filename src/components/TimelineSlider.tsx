@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Keyboard, EffectCreative, Mousewheel } from 'swiper/modules';
+import { Navigation, Keyboard, EffectCreative } from 'swiper/modules';
 import type { Swiper as SwiperType } from 'swiper';
 import { motion } from 'framer-motion';
 import type { MonthEntry } from '../types';
@@ -20,6 +20,7 @@ interface TimelineSliderProps {
 
 export function TimelineSlider({ months, currentMonth, onMonthChange, onGoToSummary, onGoHome }: TimelineSliderProps) {
   const swiperRef = useRef<SwiperType | null>(null);
+  const isScrollingRef = useRef(false);
 
   const handleSlideChange = useCallback((swiper: SwiperType) => {
     onMonthChange(swiper.activeIndex + 1);
@@ -42,6 +43,32 @@ export function TimelineSlider({ months, currentMonth, onMonthChange, onGoToSumm
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onGoToSummary, onGoHome]);
+
+  // Custom wheel handler for mouse scroll
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (!swiperRef.current || isScrollingRef.current) return;
+
+      const delta = e.deltaY;
+      if (Math.abs(delta) < 5) return; // Ignore tiny movements
+
+      isScrollingRef.current = true;
+
+      if (delta > 0) {
+        swiperRef.current.slideNext();
+      } else {
+        swiperRef.current.slidePrev();
+      }
+
+      // Debounce to prevent rapid scrolling
+      setTimeout(() => {
+        isScrollingRef.current = false;
+      }, 500);
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: true });
+    return () => window.removeEventListener('wheel', handleWheel);
+  }, []);
 
   return (
     <div className="min-h-screen bg-base pt-16 relative">
@@ -66,7 +93,7 @@ export function TimelineSlider({ months, currentMonth, onMonthChange, onGoToSumm
 
       {/* Swiper Slider */}
       <Swiper
-        modules={[Navigation, Keyboard, EffectCreative, Mousewheel]}
+        modules={[Navigation, Keyboard, EffectCreative]}
         spaceBetween={0}
         slidesPerView={1}
         navigation={{
@@ -74,12 +101,6 @@ export function TimelineSlider({ months, currentMonth, onMonthChange, onGoToSumm
           prevEl: '.swiper-button-prev-custom',
         }}
         keyboard={{ enabled: true }}
-        mousewheel={{
-          forceToAxis: true,
-          sensitivity: 1,
-          thresholdDelta: 30,
-          releaseOnEdges: true,
-        }}
         effect="creative"
         creativeEffect={{
           prev: {
@@ -98,7 +119,7 @@ export function TimelineSlider({ months, currentMonth, onMonthChange, onGoToSumm
         className="h-[calc(100vh-64px)]"
       >
         {months.map((month, index) => (
-          <SwiperSlide key={month.month} className="h-full overflow-y-auto bg-base">
+          <SwiperSlide key={month.month} className="h-full overflow-hidden bg-base">
             <MonthCard entry={month} isActive={currentMonth === index + 1} />
           </SwiperSlide>
         ))}

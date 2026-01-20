@@ -18,7 +18,7 @@ export function MonthCard({ entry, isActive }: MonthCardProps) {
   const badgeColor = badgeColors[(entry.month - 1) % badgeColors.length];
 
   return (
-    <div className="min-h-full flex items-center justify-center p-6 sm:p-12 pb-24">
+    <div className="h-full flex items-center justify-center p-6 sm:p-12 pb-24 overflow-hidden">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: isActive ? 1 : 0.5, y: isActive ? 0 : 20 }}
