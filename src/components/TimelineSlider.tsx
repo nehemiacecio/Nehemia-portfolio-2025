@@ -77,7 +77,8 @@ export function TimelineSlider({ months, currentMonth, onMonthChange, onGoToSumm
         mousewheel={{
           forceToAxis: true,
           sensitivity: 1,
-          thresholdDelta: 50,
+          thresholdDelta: 30,
+          releaseOnEdges: true,
         }}
         effect="creative"
         creativeEffect={{
