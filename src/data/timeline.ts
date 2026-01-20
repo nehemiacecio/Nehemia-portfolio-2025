@@ -218,7 +218,7 @@ export const timelineData: TimelineData = {
       highlights: [
         "BCVN: Group merchant screen enhancement",
         "UPI Brand integration in Merchant Module",
-        "Personal Project GAP development",
+        "Personal Project ESB development",
         "Year-end code reviews and documentation"
       ],
       tags: ["Work", "Project", "Personal"],
@@ -260,10 +260,9 @@ export const timelineData: TimelineData = {
       "React frontend development (personal projects)"
     ],
     nextYearGoals: [
-      "Master more payment integration standards",
       "Contribute to more BCVN and BCKG features",
-      "Complete personal GAP project",
-      "Learn more about system architecture design",
+      "Complete personal ESB project",
+      "Learn more about AI usage in a MAAS environment.",
       "Improve automated testing practices"
     ]
   }
